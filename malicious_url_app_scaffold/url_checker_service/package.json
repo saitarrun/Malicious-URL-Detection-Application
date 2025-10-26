@@ -1,0 +1,12 @@
+{
+  "name": "url_checker_service",
+  "version": "1.0.0",
+  "description": "A microservice to check for malicious URLs",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}

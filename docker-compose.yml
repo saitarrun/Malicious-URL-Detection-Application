@@ -1,0 +1,84 @@
+services:
+  db:
+    image: postgres:14
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=malicious_url_db
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d malicious_url_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./malicious_url_app_scaffold/backend
+      dockerfile: Dockerfile.backend
+    volumes:
+      - ./malicious_url_app_scaffold/backend:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/malicious_url_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=a-super-secret-key
+      - DEBUG=1
+
+  frontend:
+    build:
+      context: ./malicious_url_app_scaffold/frontend
+      dockerfile: Dockerfile.frontend
+    volumes:
+      - ./malicious_url_app_scaffold/frontend:/app
+      - /app/node_modules
+      - /app/.next
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+  url-checker-service:
+    build:
+      context: ./malicious_url_app_scaffold/url_checker_service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+
+  worker:
+    build:
+      context: ./malicious_url_app_scaffold/backend
+      dockerfile: Dockerfile.backend
+    command: celery -A malicious_url_backend worker --loglevel=info
+    depends_on:
+      - redis
+      - db
+    environment:
+      - DATABASE_URL=postgres://user:password@db:5432/malicious_url_db
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=a-super-secret-key
+
+  flower:
+    build:
+      context: ./malicious_url_app_scaffold/backend
+      dockerfile: Dockerfile.backend
+    command: celery -A malicious_url_backend flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:

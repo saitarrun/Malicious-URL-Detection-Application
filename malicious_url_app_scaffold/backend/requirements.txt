@@ -1,0 +1,15 @@
+django
+djangorestframework
+gunicorn
+redis
+psycopg2-binary
+scikit-learn
+joblib
+pandas
+numpy
+dj-database-url
+django-cors-headers
+django-redis
+djangorestframework-simplejwt
+celery[redis]
+flower
