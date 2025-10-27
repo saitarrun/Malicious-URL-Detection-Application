@@ -34,6 +34,7 @@ services:
       redis:
         condition: service_started
     environment:
+      - URL_CHECKER_BASE=http://url-checker-service:8080
       - DATABASE_URL=postgres://user:password@db:5432/malicious_url_db
       - REDIS_URL=redis://redis:6379/1
       - SECRET_KEY=a-super-secret-key
