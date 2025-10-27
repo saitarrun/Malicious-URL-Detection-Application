@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:14
@@ -14,7 +16,7 @@ services:
       retries: 5
 
   redis:
-    image: "redis:alpine"
+    image: redis:alpine
     ports:
       - "6379:6379"
 
@@ -33,22 +35,29 @@ services:
         condition: service_started
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/malicious_url_db
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis:6379/1
       - SECRET_KEY=a-super-secret-key
       - DEBUG=1
+      - DJANGO_SETTINGS_MODULE=malicious_url_backend.settings
+      - ALLOWED_HOSTS=*
+      - CORS_ALLOWED_ORIGINS=http://localhost:3000
+    command: >
+      bash -lc "python src/manage.py migrate &&
+      gunicorn --bind :8000 --chdir src malicious_url_backend.wsgi:application"
 
   frontend:
     build:
       context: ./malicious_url_app_scaffold/frontend
       dockerfile: Dockerfile.frontend
-    volumes:
-      - ./malicious_url_app_scaffold/frontend:/app
-      - /app/node_modules
-      - /app/.next
+    environment:
+      - NEXT_PUBLIC_API_BASE=http://localhost:8000   # important: browser can reach this
     ports:
       - "3000:3000"
     depends_on:
       - backend
+    volumes:
+      - ./malicious_url_app_scaffold/frontend:/app   # dev hot-reload
+    command: npm run dev
 
   url-checker-service:
     build:
@@ -61,24 +70,33 @@ services:
     build:
       context: ./malicious_url_app_scaffold/backend
       dockerfile: Dockerfile.backend
-    command: celery -A malicious_url_backend worker --loglevel=info
+    command: bash -c "cd /app/src && celery -A malicious_url_backend worker --loglevel=info --uid=nobody"
+    volumes:
+      - ./malicious_url_app_scaffold/backend:/app
     depends_on:
       - redis
       - db
     environment:
       - DATABASE_URL=postgres://user:password@db:5432/malicious_url_db
-      - REDIS_URL=redis://redis:6379
+      - REDIS_URL=redis://redis:6379/0
       - SECRET_KEY=a-super-secret-key
+      - C_FORCE_ROOT=false
 
   flower:
     build:
       context: ./malicious_url_app_scaffold/backend
       dockerfile: Dockerfile.backend
-    command: celery -A malicious_url_backend flower --port=5555
+    command: bash -c "cd /app/src && celery -A malicious_url_backend flower --port=5555 --uid=nobody"
+    volumes:
+      - ./malicious_url_app_scaffold/backend:/app
     ports:
       - "5555:5555"
+    environment:
+      - SECRET_KEY=a-super-secret-key
+      - REDIS_URL=redis://redis:6379/0
     depends_on:
       - redis
+      - worker
 
 volumes:
   postgres_data:

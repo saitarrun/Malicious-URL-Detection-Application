@@ -1,78 +1,97 @@
 import { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/router';
+import Link from 'next/link';
+import { useAuth } from '../context/AuthContext';
 
-export default function Login() {
+/**
+ * LoginPage — Handles user login via AuthContext.
+ * Redirects to /dashboard on success.
+ */
+export default function LoginPage() {
+  const { login } = useAuth();
+  const router = useRouter();
 
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const { login } = useAuth();
-    const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setLoading(true);
-        setError('');
-        setSuccess('');
-        try {
-            await login(username, password);
-            setSuccess('Login successful! Redirecting...');
-            setTimeout(() => router.push('/'), 1200);
-        } catch (err: any) {
-            setError(err?.message || 'Login failed');
-        } finally {
-            setLoading(false);
-        }
-    };
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#6a11cb] to-[#2575fc] relative overflow-hidden">
-            {/* Background image overlay (optional) */}
-            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1500&q=80')] bg-cover bg-center opacity-30 z-0"></div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#6a11cb]/80 to-[#2575fc]/80 z-0"></div>
-            <div className="relative z-10 w-full max-w-md mx-auto">
-                <form onSubmit={handleSubmit} className="bg-white/90 backdrop-blur-lg p-10 rounded-3xl shadow-2xl flex flex-col items-center">
-                    {/* Logo/avatar */}
-                    <img src="/logo.png" alt="Logo" className="w-16 h-16 mb-4 rounded-full shadow-lg" onError={e => (e.currentTarget.style.display='none')} />
-                    <h1 className="text-4xl font-extrabold mb-2 text-center text-[#2575fc] tracking-tight">Welcome Back</h1>
-                    <p className="mb-6 text-center text-gray-500 text-lg">Sign in to your account</p>
-                    {error && <div className="mb-4 text-red-500 text-center w-full">{error}</div>}
-                    {success && <div className="mb-4 text-green-500 text-center w-full">{success}</div>}
-                    <div className="mb-4 w-full">
-                        <input
-                            type="text"
-                            placeholder="Username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            className="p-4 border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#2575fc] text-lg bg-white"
-                            required
-                        />
-                    </div>
-                    <div className="mb-6 w-full">
-                        <input
-                            type="password"
-                            placeholder="Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            className="p-4 border border-gray-300 rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-[#2575fc] text-lg bg-white"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        className="bg-gradient-to-r from-[#6a11cb] to-[#2575fc] text-white p-4 rounded-xl w-full font-bold text-lg shadow-lg hover:scale-105 transition-transform duration-150"
-                        disabled={loading}
-                    >
-                        {loading ? <span className="animate-spin mr-2 inline-block w-6 h-6 border-2 border-t-2 border-[#2575fc] rounded-full"></span> : 'Sign In'}
-                    </button>
-                    <div className="mt-6 text-center text-base text-gray-600 w-full">
-                        Don't have an account? <a href="/register" className="text-[#2575fc] font-semibold hover:underline">Sign Up</a>
-                    </div>
-                </form>
-            </div>
-        </div>
-    );
+    try {
+      await login(username, password);
+      router.push('/dashboard');
+    } catch (err: any) {
+      // Show backend error if available
+      const message =
+        err?.response?.data?.detail ||
+        err?.response?.data?.error ||
+        'Login failed. Please check your credentials.';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50 p-6">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-lg p-8">
+        <h1 className="text-2xl font-semibold mb-4 text-teal-600">Sign In</h1>
+        <p className="text-sm text-neutral-500 mb-6">
+          Enter your username and password to access your account.
+        </p>
+
+        <form onSubmit={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-1 text-neutral-700">Username</label>
+            <input
+              className="w-full input-field"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              autoComplete="username"
+              placeholder="Your username"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-1 text-neutral-700">Password</label>
+            <input
+              type="password"
+              className="w-full input-field"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              autoComplete="current-password"
+              placeholder="••••••••"
+            />
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+              {error}
+            </p>
+          )}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full h-12 rounded-full text-white font-semibold shadow-md hover:shadow-lg transition bg-gradient-to-r from-[#00bfa6] to-[#009e8e]"
+          >
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
+        </form>
+
+        <p className="mt-4 text-sm text-center text-neutral-600">
+          Don’t have an account?{' '}
+          <Link href="/register" className="text-teal-600 font-semibold hover:underline">
+            Create one
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }

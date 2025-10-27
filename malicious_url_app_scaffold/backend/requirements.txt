@@ -1,15 +1,18 @@
-django
-djangorestframework
-gunicorn
-redis
-psycopg2-binary
+Django>=4.2,<5.0
+djangorestframework>=3.14
+djangorestframework-simplejwt>=5.3
+django-cors-headers>=4.3
+gunicorn>=21.2
+psycopg2-binary>=2.9
+redis>=5.0
+celery[redis]>=5.3
+flower>=2.0
+requests>=2.32
+
+# keep only if you truly use them
 scikit-learn
 joblib
 pandas
 numpy
 dj-database-url
-django-cors-headers
 django-redis
-djangorestframework-simplejwt
-celery[redis]
-flower
