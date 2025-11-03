@@ -114,34 +114,6 @@ docker run -d -p 5000:5000 malicious-url-detector
 http://localhost:5000/
 ```
 
-The app will be fully functional inside the container
-
-📊 Model Workflow
-	1.	Dataset Collection:
-The model is trained using publicly available URL datasets containing labeled malicious and benign samples.
-	2.	Feature Engineering:
-	•	Tokenization of URLs
-	•	Lexical and structural feature extraction
-	•	Statistical pattern generation
-	3.	Training and Evaluation:
-Multiple classifiers (Logistic Regression, Random Forest, SVM, XGBoost) are evaluated on performance metrics like Accuracy, Precision, Recall, and F1-score.
-	4.	Model Deployment:
-The best-performing model is serialized (model.pkl) and integrated into the Flask app for live inference.
-
-
-🧮 Folder Structure
-
-Malicious-URL-Detection-Application/
-├── app.py                 # Main Flask application
-├── requirements.txt        # Python dependencies
-├── dataset/                # Training and testing datasets
-├── model/                  # Trained ML models (.pkl)
-├── static/                 # CSS and JS assets
-├── templates/              # HTML frontend templates
-├── utils/                  # Helper scripts (feature extraction, preprocessing)
-└── README.md               # Project documentation
-
-
 🧭 Future Enhancements
 	•	Deep learning–based URL classification using CNN or LSTM.
 	•	Integration with live WHOIS and IP reputation APIs.
