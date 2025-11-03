@@ -1,7 +1,3 @@
-Here is a complete, professional, and descriptive README.md file for your GitHub repository:
-
-⸻
-
 
 # 🛡️ Malicious URL Detection Application
 
