@@ -81,8 +81,6 @@ cd Malicious-URL-Detection-Application
 pip install -r requirements.txt
 
 
-⸻
-
 ▶️ Running the Application
 
 # Start the Flask web server
