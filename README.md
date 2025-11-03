@@ -95,6 +95,27 @@ http://127.0.0.1:5000/
 Enter a URL or upload a CSV file to begin classification.
 
 
+## 🐳 Running with Docker
+
+You can containerize and deploy the application using **Docker**.
+
+### 🏗️ Build the Docker Image
+```bash
+docker build -t malicious-url-detector .
+```
+
+### ▶️ Run the Container
+```bash
+docker run -d -p 5000:5000 malicious-url-detector
+```
+
+### 🌐 Access the App
+```
+http://localhost:5000/
+```
+
+The app will be fully functional inside the container
+
 📊 Model Workflow
 	1.	Dataset Collection:
 The model is trained using publicly available URL datasets containing labeled malicious and benign samples.
@@ -135,3 +156,4 @@ $ python app.py
 
 Enter URL: http://secure-login-paypal-update.com
 Prediction: Malicious (Confidence: 93.7%)
+
